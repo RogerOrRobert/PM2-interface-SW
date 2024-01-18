@@ -10,21 +10,12 @@ import dynamic from 'next/dynamic'
 import { useThemeSetting } from '@tamagui/next-theme'
 import { getPendingResult } from "protolib/base";
 import { usePendingEffect } from "protolib";
+import { Flows } from "protolib";
 
 const DeviceDefitionIcons = {
   name: Tag,
   board: CircuitBoard
 }
-
-const FlowsWidget = dynamic(() => import('../../../adminpanel/features/components/FlowsWidget'), {
-  loading: () => <>
-    <Center>
-      <Spinner size={'small'} scale={3} top={-50} />
-      Loading
-    </Center>
-  </>,
-  ssr: false
-})
 
 const sourceUrl = '/adminapi/v1/devicedefinitions'
 const boardsSourceUrl = '/adminapi/v1/deviceboards?all=1'
@@ -38,10 +29,10 @@ export default {
     const defaultJsCode = { "components": "[\n \"mydevice\",\n \"esp32dev\",\n null,\n null,\n null,\n null,\n null,\n null,\n null,\n null,\n null,\n null,\n null,\n null,\n null,\n null,\n null,\n null,\n null,\n null,\n null,\n null,\n null,\n null,\n null,\n null,\n null,\n null,\n null,\n null,\n null,\n null,\n null,\n null,\n null,\n];\n\n" }
     const [sourceCode, setSourceCode] = useState(defaultJsCode.components)
     // const [isModified,setIsModified] = React.useState(false)
-    const [editedObjectData, setEditedObjectData]= React.useState({})
+    const [editedObjectData, setEditedObjectData] = React.useState({})
 
-    const saveToFile= (code,path)=>{
-      editedObjectData.setData({components: code, sdkConfig: {board: "esp32dev", framework:{type: "arduino"}}})
+    const saveToFile = (code, path) => {
+      editedObjectData.setData({ components: code, sdkConfig: { board: "esp32dev", framework: { type: "arduino" } } })
     }
 
     const [boardList, setBoardList] = useState(extraData?.boards ?? getPendingResult('pending'))
@@ -56,21 +47,14 @@ export default {
       <AlertDialog open={showDialog} setOpen={(open) => { setShowDialog(open) }} hideAccept={true} style={{ width: "80%", height: "80%" }}>
         {/* <Center style={{minWidth: "80%" }}> */}
         <XStack mt={10} f={1} minWidth={"100%"}>
-          <FlowsWidget style={{ width: "100%" }}
-            // icons={<XStack position="absolute" right={isFull ? 0 : 50} top={isFull ? -35 : -32}>
-            //     <IconContainer onPress={() => { }}>
-            //         {/* <SizableText mr={"$2"}>Save</SizableText> */}
-            //         <Save color="var(--color)" size={isFull ? "$2" : "$1"} />
-            //     </IconContainer>
-            // </XStack>}
-            // isModified={isModified}
-            // setIsModified={(e)=>{console.log("Set is Modified: ", e);}}
-            //onPlay={onPlay}
+          <Flows
+            style={{ width: "100%" }}
             disableDots={true}
-            onSave={isSaveActive?(o) => { 
-              console.log("ON SAVE: ", o); 
-              saveToFile(o,"a")
-           }:null}
+            onSave={isSaveActive
+              ? (o) => {
+                console.log("ON SAVE: ", o);
+                saveToFile(o, "a")
+              } : null}
             hideBaseComponents={true}
             disableStart={true}
             getFirstNode={(nodes) => {
@@ -78,12 +62,28 @@ export default {
             }}
             showActionsBar={isSaveActive}
             mode={"device"}
+            customComponents={"device"}
             bridgeNode={false}
             setSourceCode={(sourceCode) => {
-                console.log('set new sourcecode from flows: ', sourceCode)
-                setSourceCode(sourceCode)
-            }} 
-            sourceCode={sourceCode} themeMode={resolvedTheme} />
+              console.log('set new sourcecode from flows: ', sourceCode)
+              setSourceCode(sourceCode)
+            }}
+            sourceCode={sourceCode}
+            themeMode={resolvedTheme}
+            key={'flow'}
+            config={{ masks: [], layers: [] }}
+            bgColor={'transparent'}
+            dataNotify={(data: any) => {
+              if (data.notifyId) {
+                //mqttPub('datanotify/' + data.notifyId, JSON.stringify(data))
+              }
+            }}
+            positions={[]}
+            disableSideBar={true}
+            // store={uiStore}
+            display={true}
+            flowId={"flows-editor"}
+          />
           {/* </Center> */}
         </XStack>
       </AlertDialog>
@@ -123,8 +123,8 @@ export default {
           'config': {
             component: (path, data, setData, mode) => {
               console.log("inputs: ", { path, data, setData, mode })
-              if (mode == "preview"){return <></>}
-              return <ButtonSimple onPress={(e) => {setShowDialog(true); setIsSaveActive(true); mode=="add"?setSourceCode(defaultJsCode.components):setSourceCode(data.components); setEditedObjectData({path,data,setData,mode});  console.log("inputs: ", { path, data, setData, mode })}}>Edit</ButtonSimple>
+              if (mode == "preview") { return <></> }
+              return <ButtonSimple onPress={(e) => { setShowDialog(true); setIsSaveActive(true); mode == "add" ? setSourceCode(defaultJsCode.components) : setSourceCode(data.components); setEditedObjectData({ path, data, setData, mode }); console.log("inputs: ", { path, data, setData, mode }) }}>Edit</ButtonSimple>
             },
             hideLabel: false
           }
