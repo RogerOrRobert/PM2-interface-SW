@@ -4,7 +4,6 @@ import { ServiceButtons } from './ServiceButtons'
 import { ServiceStatus } from './ServiceStatus'
 
 export function ServiceView({ minero, onPress }) {
-  // console.log("data1: ", data)
   return (
     <XStack key={minero.id} jc="space-between" borderColor={"white"} borderStyle='solid' borderRadius={10} p={10} margin={5}>
       <XStack>

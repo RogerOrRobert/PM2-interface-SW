@@ -1,4 +1,3 @@
-import { Save } from '@tamagui/lucide-icons'
 import { Button } from 'tamagui'
 import { Switch} from "@my/ui"
 import { useState, useEffect } from 'react';
@@ -21,9 +20,3 @@ export const SaveButton = ({ minero, buttonPressed }) => {
     </Button>
   );
 };
-
-// DataTable2.column("monit", "enabled", true, (row) => <><Switch defaultChecked={row.enabled}><Switch.Thumb></Switch.Thumb></Switch>),
-
-{/* <Button onPress={() => buttonPressed('save')} borderColor={'grey'} borderStyle="solid" ml={2} mr={2}>
-      <Switch  defaultChecked={minero.enabled}><Switch.Thumb></Switch.Thumb></Switch>
-    </Button> */}

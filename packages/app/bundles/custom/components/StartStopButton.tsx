@@ -1,4 +1,4 @@
-import { Button, XStack } from 'tamagui'
+import { Button } from 'tamagui'
 import { PlayCircle,PauseCircle } from '@tamagui/lucide-icons'
 
 export const StartStopButton = ({ minero, buttonPressed }) => {

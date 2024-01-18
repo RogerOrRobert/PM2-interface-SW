@@ -63,7 +63,7 @@ export function ListMiners({ elements, onPress }) {
         });
         setMinersData(updatedMinersData);      
       } catch (error) {
-        console.error('Error al hacer la solicitud al servidor:', error);
+        console.error('Error when making the request to the server:', error);
       }
     }
   }
@@ -80,7 +80,7 @@ export function ListMiners({ elements, onPress }) {
       try {
         serviceMqttData(realTimeDataMessage.message);  
       } catch (error) {
-        console.error('Error al parsear el mensaje MQTT:', error);
+        console.error('Error parsing MQTT message:', error);
       }
     }
   }, [realTimeDataMessage, pageLoaded]);

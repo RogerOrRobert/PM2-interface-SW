@@ -21,75 +21,67 @@ async function GetMiners() {
     try {
         const response = await fetch('http://localhost:8080/api/v1/services');
         if (!response.ok) {
-            throw new Error('No se pudo obtener la lista de mineros.');
+            throw new Error('Could not obtain the miners list.');
         }
         const data = await response.json();
         const minerIds = data.items?.map((miner) => miner.id);
         return minerIds;
     } catch (error) {
-        throw new Error('Error al obtener la lista de mineros: ' + error.message);       
+        throw new Error('Error obtaining the miners list: ' + error.message);       
     }
 }
 
-export function IntervalMqtt(app, context) {
-    
+export function IntervalMqtt(app, context) {    
     const { mqtt } = context
     
     setInterval( async () => {     
         try {
             const minersIds = await GetMiners()
-            // console.log("miners id: ", minersIds)
             minersIds.map((id) => {
-                // id.forEach((id) => {
-                    pm2.describe(id, (err, apps) => {
-                        if (err) {
-                            console.error('Error al obtener procesos:', err);
-                        } else {
-                            let status, cpu, memory;
-                            
-                            if (apps) {
-                                // Verifica si la memoria es NaN
-                                if (isNaN(apps[0]?.monit?.memory)) {
-                                    status = 'stopped';
-                                    cpu = 0;
-                                    memory = '0.0';
-                                } else {
-                                    status = apps[0]?.pm2_env?.status;
-                                    cpu = apps[0]?.monit?.cpu;
-                                    memory = (apps[0]?.monit?.memory / (1024 * 1024)).toFixed(1);
-                                }
-                                
-                                const realTimeData = {
-                                    id: id,
-                                    status: status,
-                                    cpu: cpu,
-                                    memory: memory
-                                };
-                    
-                                const realTimeDataString = JSON.stringify(realTimeData);
-                                // mqttClient.on(realTimeDataString, (topic, message) => {
-                                mqtt.publish('real_time_data_topic', realTimeDataString);
-                                // console.log("realTimeData: ", realTimeDataString)
-                                // })
+                pm2.describe(id, (err, apps) => {
+                    if (err) {
+                        console.error('Error obtaining processes:', err);
+                    } else {
+                        let status, cpu, memory;
+                        
+                        if (apps) {
+                            // verify if the memory is NaN
+                            if (isNaN(apps[0]?.monit?.memory)) {
+                                status = 'stopped';
+                                cpu = 0;
+                                memory = '0.0';
                             } else {
-                                const realTimeData = ([{ name: id, pm2_env: { status: 'stopped' } }]);
-                                const realTimeDataString = JSON.stringify(realTimeData);
-                                mqtt.publish('real_time_data_topic', realTimeDataString);
+                                status = apps[0]?.pm2_env?.status;
+                                cpu = apps[0]?.monit?.cpu;
+                                memory = (apps[0]?.monit?.memory / (1024 * 1024)).toFixed(1);
                             }
-                        }
-                    });
-                // });
+                            
+                            const realTimeData = {
+                                id: id,
+                                status: status,
+                                cpu: cpu,
+                                memory: memory
+                            };
                 
+                            const realTimeDataString = JSON.stringify(realTimeData);
+                            mqtt.publish('real_time_data_topic', realTimeDataString);
+                        } else {
+                            const realTimeData = ([{ name: id, pm2_env: { status: 'stopped' } }]);
+                            const realTimeDataString = JSON.stringify(realTimeData);
+                            mqtt.publish('real_time_data_topic', realTimeDataString);
+                        }
+                    }
+                });
             });
                     
         } catch (error) {
-            console.error('Error al obtener procesos:', error);
+            console.error('Error obtaining processes:', error);
         }
     }, 3000)
 }
 
 export function GetProcesses(app, context) {
-    app.get("/api/v1/pm2Services/describe/:id", (req, res) => {
+    app.get("/api/v1/pm2Services/describe/:id", (req, res) => { // show the inital monit data
         const { id } = req.params;
         const { mqtt } = context
         setTimeout(() => {
@@ -102,13 +94,13 @@ export function GetProcesses(app, context) {
                         let status, cpu, memory;
                 
                         if (apps[0]) {
-                            // Verifica si la memoria es NaN
+                            // verify if the memmory is a NaN
                             if (isNaN(apps[0]?.monit?.memory)) {
                                 status = 'stopped';
                                 cpu = 0;
                                 memory = '0.0';
                             } else {
-                                // Asigna los valores actuales si la memoria no es NaN
+                                // assings the actual values if the memory is not a NaN
                                 status = apps[0]?.pm2_env?.status;
                                 cpu = apps[0]?.monit?.cpu;
                                 memory = (apps[0]?.monit?.memory / (1024 * 1024)).toFixed(1);
@@ -131,7 +123,7 @@ export function GetProcesses(app, context) {
                 });
                 
             } catch (error) {
-                console.error('Error al obtener procesos:', error);
+                console.error('Error obtaining processes:', error);
                 res.status(500).send("<h1>500 Internal server error</h1>");
             }
         },600)
@@ -143,43 +135,18 @@ function isFileEmpty(filePath) {
     return new Promise((resolve, reject) => {
         fs.stat(filePath, (err, stats) => {
             if (err) {
-                // Si hay un error al obtener información del archivo, rechazar la promesa
+                // if there's error obtaining the files info, refuse the promise
                 reject(err);
                 return;
             }
 
-            // Verificar si el tamaño del archivo es cero
+            // verify if the size of the file is zero
             resolve(stats.size === 0);
         });
     });
 }
 
 export async function GetConsole(app, context) {
-    // app.get("/api/v1/pm2Services/console/:id", (req, res) => {
-    //     const { id } = req.params;
-    //     try {
-    //         pm2.describe(id, (err, apps) => {
-    //             if (err) {
-    //                 console.error('Error al obtener procesos:', err);
-    //                 res.status(500).send("<h1>500 Internal server error</h1>");
-    //             } else {
-    //                 if (apps) {
-    //                     const route = apps[0].pm2_env.pm_out_log_path
-    //                     const path = route.replace(/\\/g, '/');
-    //                     // mqttClient.publish('real_time_data_topic', realTimeDataString, { qos: 0, retain: false });
-    //                     res.json(path);
-    //                 } else {
-    //                     res.json([{ name: id, pm2_env: { status: 'stopped' } }]);
-    //                 }
-    //             }
-    //         });
-            
-    //     } catch (error) {
-    //         console.error('Error al obtener procesos:', error);
-    //         res.status(500).send("<h1>500 Internal server error</h1>");
-    //     }
-        
-    // });
     const minersIds = GetMiners()
     const { mqtt } = context
     setInterval(() => {
@@ -188,14 +155,14 @@ export async function GetConsole(app, context) {
                 id.forEach((id) => {
                     pm2.describe(id, (err, apps) => {
                         if (err) {
-                            console.error('Error al obtener procesos:', err);
+                            console.error('Error obtaining processes:', err);
                         } else {                  
                             if (apps[0]) {
                                 const route = apps[0].pm2_env.pm_out_log_path
                                 const path = route.replace(/\\/g, '/');
                                 fs.readFile(path, 'utf-8', (err, data) => {
                                     if (err) {
-                                        console.error('Error al leer el archivo:', err);
+                                        console.error('Error reading the file:', err);
                                         return;
                                     }
                                     const lineas = data.split('\n');
@@ -208,7 +175,7 @@ export async function GetConsole(app, context) {
                                             }                                                                         
                                         })
                                         .catch((error) => {
-                                            console.error('Error al verificar si el archivo está vacío:', error);
+                                            console.error('Error when verifying if the file is empty:', error);
                                         });
                                 });
                             } 
@@ -219,7 +186,7 @@ export async function GetConsole(app, context) {
             })
                     
         } catch (error) {
-            console.error('Error al obtener procesos:', error);
+            console.error('Error obtaining processes:', error);
         }
     }, 3000)
 }
@@ -254,7 +221,6 @@ export async function RestartProcess(app) {
                     res.json(apps);
                 }
             });
-            //res.send(result);
         } catch (error) {
             res.status(500).send(error.message);
         }
@@ -281,15 +247,15 @@ export async function StopProcess(app) {
 }
 
 export function GetStartOptions(name) {
-    const script = `setInterval(() => { console.log('Ejecutando el contenido del contenedor ${name}');  }, 1000);`;
+    const script = `setInterval(() => { console.log('Running container contents ${name}');  }, 1000);`;
     const scriptFileName = `${name}.js`;
 
     try {
-        // Escribe el script en un archivo con el nombre del contenedor
+        // Write the script in a file with the containers name
         fs.writeFileSync(scriptFileName, script, 'utf8');
-        console.log(`Archivo del script del contenedor ${name} creado correctamente.`);
+        console.log(`Container script file ${name} successfully created.`);
     } catch (err) {
-        console.error('Error al escribir el archivo del script:', err);
+        console.error('Error writting scripts file:', err);
     }
 
     return {

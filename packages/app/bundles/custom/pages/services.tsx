@@ -7,10 +7,8 @@ Paginated apis return an object like: {"itemsPerPage": 25, "items": [...], "tota
 
 import { Protofy, z } from 'protolib/base'
 import { Objects } from 'app/bundles/objects'
-import { Theme, YStack, Text, Spacer, XStack, Paragraph, Switch, Button} from "@my/ui"
-import { BlockTitle, Tinted, withSession, Page, useEdit, DataView, DataTable2, API, PaginatedDataSSR, SectionBox, SSR, ContainerLarge} from "protolib"
-import { DefaultLayout, } from "../../../layout/DefaultLayout"
-import { NextPageContext } from 'next'
+import { XStack, Paragraph } from "@my/ui"
+import { DataView, DataTable2, API, PaginatedDataSSR, SectionBox } from "protolib"
 import { ServiceButtons } from '../components/ServiceButtons'
 import { ServiceStatus } from '../components/ServiceStatus'
 import { useState, useEffect } from 'react';
@@ -18,7 +16,7 @@ import { useSubscription } from 'mqtt-react-hooks';
 import { ServiceModel } from '../objects/service'
 import { AdminPage } from 'protolib'
 import { Save, HardHat } from '@tamagui/lucide-icons'
-const Icons =  {}
+
 const isProtected = Protofy("protected", false)
 const {name, prefix} = Objects.service.getApiOptions()
 const sourceUrl = prefix + name
@@ -73,7 +71,7 @@ export function ListContainersPage({ initialElements, pageSession }) {
             );
             setMinersData(updatedMinersData);
         } catch (error) {
-            console.error('Error al obtener datos de los mineros:', error);
+            console.error('Error getting data from miners:', error);
         }
     };
 
@@ -100,7 +98,7 @@ export function ListContainersPage({ initialElements, pageSession }) {
                     });
                 });
             } catch (error) {
-                console.error('Error al hacer la solicitud al servidor:', error);
+                console.error('Error when making the request to the server:', error);
             }
         }
     };
@@ -111,7 +109,7 @@ export function ListContainersPage({ initialElements, pageSession }) {
     const { message } = useSubscription(consoleDataTopic);
     useEffect(() => {
         if (message && !consoleDataMessage.includes(message.message)) {
-            console.log("contenido archivo: ", message.message)
+            console.log("file content: ", message.message)
             setConsoleDataMessage(prevMessages => [...prevMessages, message.message]);
         }
     }, [message]);
@@ -125,7 +123,6 @@ export function ListContainersPage({ initialElements, pageSession }) {
         item: '',
         editFile: ''
     }
-    // console.log("inital Elements:", initialElements)
     return (<AdminPage title="Services" pageSession={pageSession}>
         {visible ? (
             <SectionBox mt="$5" width={'1100px'} color="yellow" bubble={true} gradient={true} borderColor={'yellow'} borderStyle="solid">
@@ -154,7 +151,7 @@ export function ListContainersPage({ initialElements, pageSession }) {
                             try {
                                 row = serviceMqttData(realTimeDataMessage.message);  
                             } catch (error) {
-                                console.error('Error al parsear el mensaje MQTT:', error);
+                                console.error('Error parsing MQTT message:', error);
                             }
                         }
                     }, [realTimeDataMessage, pageLoaded]);
@@ -162,10 +159,7 @@ export function ListContainersPage({ initialElements, pageSession }) {
                 }),
                 DataTable2.column("monit", "monit", false, (row) => {        
                     useEffect(() => {
-                        /* const time = setInterval(() => { */
-                            fetchInitialData();
-                        // }, 3000)
-                        // return () => clearInterval(time); 
+                        fetchInitialData();
                     }, [elements]);
                 
                     useEffect(() => {
@@ -173,7 +167,7 @@ export function ListContainersPage({ initialElements, pageSession }) {
                             try {
                                 serviceMqttData(realTimeDataMessage.message);  
                             } catch (error) {
-                                console.error('Error al parsear el mensaje MQTT:', error);
+                                console.error('Error parsing MQTT message:', error);
                             }
                         }
                     }, [realTimeDataMessage, pageLoaded]);
@@ -197,14 +191,11 @@ export function ListContainersPage({ initialElements, pageSession }) {
                         
                 }),
                 DataTable2.column("buttons", "enabled", true, (row) => {
-                    // const [minero, setMinero] = useState(row);
-                    
                     useEffect(() => {
                         const fetchData = async () => {
                             if (pageLoaded) {
                                 try {
                                     row = await fetchInitialData();
-                                    // setMinero(initialData);
                                 } catch (error) {
                                     console.error('Error al obtener datos iniciales:', error);
                                 }
@@ -217,10 +208,9 @@ export function ListContainersPage({ initialElements, pageSession }) {
                     useEffect(() => {
                         if (realTimeDataMessage) {
                             try {
-                                row = serviceMqttData(realTimeDataMessage.message);  
-                                // setMinero(initialData);
+                                row = serviceMqttData(realTimeDataMessage.message);
                             } catch (error) {
-                                console.error('Error al parsear el mensaje MQTT:', error);
+                                console.error('Error parsing MQTT message:', error);
                             }
                         }
                     }, [realTimeDataMessage]);
@@ -244,12 +234,11 @@ export function ListContainersPage({ initialElements, pageSession }) {
                     action: async () => { for (const minero of initialElements.data.items) {
                         if (minero.id) {
                             try {
-                                let enabled = await API.get('/api/v1/services/' + minero.id);   
-                                // console.log("miner: ", minero.id, "enabled: ", enabled.data.enabled)      
+                                let enabled = await API.get('/api/v1/services/' + minero.id);      
                                 minero.enabled = true
                                 await API.post('/api/v1/services/' + minero.id, minero);                   
                             } catch (error) {
-                                console.error('Error al hacer la solicitud al servidor:', error);
+                                console.error('Error when making the request to the server:', error);
                             }   
                         }
                         } },
@@ -264,13 +253,6 @@ export function ListContainersPage({ initialElements, pageSession }) {
             pageState={pageState}
             dataTableGridProps={{ itemMinWidth: 300, spacing: 20 }}
         />
-        {/* {visible ? (
-            <SectionBox mt="$5" width={'1100px'} color="yellow" bubble={true} gradient={true} borderColor={'yellow'} borderStyle="solid">
-            {consoleDataMessage.map((message, index) => (
-                <Paragraph key={index}>{message}</Paragraph>
-            ))}
-            </SectionBox>
-        ) : null} */}
     </AdminPage>);
 }
 

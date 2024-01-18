@@ -41,12 +41,10 @@ export const ServiceButtons = ({ minero, onPress }) => {
           break;
       }
       try { 
-        let serviceMiner=await API.post('/api/v1/services/' + minero.id, minero);  // change of the service state
-        console.log("service miner: ", serviceMiner)
-        console.log("minero", minero, "enabled", minero.enabled)
+        await API.post('/api/v1/services/' + minero.id, minero);  // change of the service state
         action != 'save' && action != 'terminal' ? API.get('/api/v1/pm2Services/' + action + '/' + minero.id) : null // PM2 START OR STOP      
       } catch( error ) {
-        console.error('Error al hacer la solicitud al servidor:', error);
+        console.error('Error when making the request to the server:', error);
       }        
     }     
   }
