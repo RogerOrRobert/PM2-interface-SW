@@ -252,6 +252,12 @@ export function ListContainersPage({ initialElements, pageSession }) {
             model={ServiceModel}
             pageState={pageState}
             dataTableGridProps={{ itemMinWidth: 300, spacing: 20 }}
+            dataTableListProps = {{onDelete: async (minero) => {
+                var endpoint = minero;
+                var parts = endpoint.split("/");
+                var lastPart = parts[parts.length - 1];
+                await API.get('/api/v1/pm2Services/delete/' + lastPart)
+            }}}
         />
     </AdminPage>);
 }
