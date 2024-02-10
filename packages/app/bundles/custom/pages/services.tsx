@@ -231,7 +231,7 @@ export function ListContainersPage({ initialElements, pageSession }) {
                 {
                     text: "Save all services",
                     icon: Save,
-                    action: async () => { for (const minero of initialElements.data.items) {
+                    action: async () => { minersData?.map(async (minero) => {
                         if (minero.id) {
                             try {
                                 let enabled = await API.get('/api/v1/services/' + minero.id);      
@@ -241,7 +241,7 @@ export function ListContainersPage({ initialElements, pageSession }) {
                                 console.error('Error when making the request to the server:', error);
                             }   
                         }
-                        } },
+                        }) },
                     isVisible: () => true, 
                     menus: ["bulk"]
                 }
